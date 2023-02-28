@@ -6,7 +6,7 @@ doccker-compose管理的单实例etcd集群，支持数据持久化，支持冷�
 
 ```shell
 # 初始data目录为空
-gongpengjun@mbp docker-compose-etcd-single-node$ tree
+gongpengjun@nuc ~$ tree
 .
 ├── README.md
 ├── data
@@ -15,18 +15,18 @@ gongpengjun@mbp docker-compose-etcd-single-node$ tree
 1 directory, 2 files
 
 # 启动etcd cluster
-gongpengjun@mbp docker-compose-etcd-single-node$ docker-compose up -d
+gongpengjun@nuc ~$ docker-compose up -d
 Creating network "etcd-single-node_bridge-network" with driver "bridge"
 Creating etcd-single-node_etcd-1_1 ... done
 
 # 查看容器状态
-gongpengjun@mbp docker-compose-etcd-single-node$ docker-compose ps
-          Name                         Command               State                       Ports
--------------------------------------------------------------------------------------------------------------------
-etcd-single-node_etcd-1_1   /usr/local/bin/etcd --name ...   Up      0.0.0.0:2379->2379/tcp, 0.0.0.0:2380->2380/tcp
+gongpengjun@nuc:docker-compose-etcd-single-node$ docker-compose ps
+          Name                         Command               State                 Ports
+------------------------------------------------------------------------------------------------------
+etcd-single-node_etcd-1_1   /usr/local/bin/etcd --name ...   Up      0.0.0.0:12379->2379/tcp, 2380/tcp
 
 # 查看data目录树，etcd已经初始化好了数据目录
-gongpengjun@mbp docker-compose-etcd-single-node$ tree
+gongpengjun@nuc ~$ tree
 .
 ├── README.md
 ├── data
@@ -42,19 +42,19 @@ gongpengjun@mbp docker-compose-etcd-single-node$ tree
 5 directories, 5 files
 
 # 集群只有一个etcd节点
-gongpengjun@mbp docker-compose-etcd-single-node$ etcdctl -w=table member list
+gongpengjun@mbp ~$ etcdctl --endpoints=$NUC:12379 -w=table member list
 +------------------+---------+--------+--------------------+--------------------+------------+
 |        ID        | STATUS  |  NAME  |     PEER ADDRS     |    CLIENT ADDRS    | IS LEARNER |
 +------------------+---------+--------+--------------------+--------------------+------------+
 | b8c6addf901e4e46 | started | etcd-1 | http://etcd-1:2380 | http://etcd-1:2379 |      false |
 +------------------+---------+--------+--------------------+--------------------+------------+
-gongpengjun@mbp docker-compose-etcd-single-node$ etcdctl -w=table endpoint health
+gongpengjun@mbp ~$ etcdctl --endpoints=$NUC:12379 -w=table endpoint health
 +----------------+--------+------------+-------+
 |    ENDPOINT    | HEALTH |    TOOK    | ERROR |
 +----------------+--------+------------+-------+
 | 127.0.0.1:2379 |   true | 5.480427ms |       |
 +----------------+--------+------------+-------+
-gongpengjun@mbp docker-compose-etcd-single-node$ etcdctl -w=table endpoint status
+gongpengjun@mbp ~$ etcdctl --endpoints=$NUC:12379 -w=table endpoint status
 +----------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
 |    ENDPOINT    |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
 +----------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
@@ -62,28 +62,28 @@ gongpengjun@mbp docker-compose-etcd-single-node$ etcdctl -w=table endpoint statu
 +----------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
 
 # 初始状态没有数据 secret不存在
-gongpengjun@mbp docker-compose-etcd-single-node$ etcdctl get secret
+gongpengjun@mbp ~$ etcdctl --endpoints=$NUC:12379 get secret
 
 # 设置并获取secret
-gongpengjun@mbp docker-compose-etcd-single-node$ etcdctl put secret baby-im
+gongpengjun@mbp ~$ etcdctl --endpoints=$NUC:12379 put secret baby-im
 OK
-gongpengjun@mbp docker-compose-etcd-single-node$ etcdctl get secret
+gongpengjun@mbp ~$ etcdctl --endpoints=$NUC:12379 get secret
 secret
 baby-im
 
 # 关闭etcd cluster
-gongpengjun@mbp docker-compose-etcd-single-node$ docker-compose down
+gongpengjun@nuc ~$ docker-compose down
 Stopping etcd-single-node_etcd-1_1 ... done
 Removing etcd-single-node_etcd-1_1 ... done
 Removing network etcd-single-node_bridge-network
 
 # 启动etcd cluster
-gongpengjun@mbp docker-compose-etcd-single-node$ docker-compose up -d
+gongpengjun@nuc ~$ docker-compose up -d
 Creating network "etcd-single-node_bridge-network" with driver "bridge"
 Creating etcd-single-node_etcd-1_1 ... done
 
 # 启动后可以直接查询到secret
-gongpengjun@mbp docker-compose-etcd-single-node$ etcdctl get secret
+gongpengjun@mbp ~$ etcdctl --endpoints=$NUC:12379 get secret
 secret
 baby-im
 ```
