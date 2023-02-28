@@ -16,7 +16,6 @@ services:
             - '--initial-cluster-token=mys3cr3ttok3n'
         ports:
             - "12379:2379"
-            - "12380:2380"
         volumes:
             - ./data/etcd1:/etcd-data:rw
         networks:
